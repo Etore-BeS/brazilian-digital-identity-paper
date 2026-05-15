@@ -12,3 +12,6 @@ uv.lock
 # Virtual environments
 .venv
 .env
+
+# Personal Data
+data/*.json
