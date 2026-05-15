@@ -6,7 +6,7 @@ dist/
 wheels/
 *.egg-info
 uv.lock
-.vs_code
+.vscode
 .mpl-cache
 
 # Virtual environments
