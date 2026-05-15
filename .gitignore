@@ -7,7 +7,7 @@ wheels/
 *.egg-info
 uv.lock
 .vs_code
-.mpl_cache
+.mpl-cache
 
 # Virtual environments
 .venv
