@@ -13,5 +13,5 @@ uv.lock
 .venv
 .env
 
-# Personal Data
-data/*.json
+# Personal / raw scrape data (keep local only)
+data/
