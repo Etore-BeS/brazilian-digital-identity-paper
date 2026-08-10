@@ -81,6 +81,66 @@ CLASSIFICATION_COLUMNS = [
 
 AUDIT_THEME_SUFFIXES = ("a", "b")
 
+THEME_SUFFIX_REV = "rev"
+THEME_SUFFIX_HUMAN_QUEUE = "h"
+THEME_SUFFIX_HUMAN_MAIN = "human"
+
+THEME_COLUMNS_A = [f"{col}_a" for col in ALL_THEME_COLUMNS]
+THEME_COLUMNS_B = [f"{col}_b" for col in ALL_THEME_COLUMNS]
+THEME_COLUMNS_REV = [f"{col}_{THEME_SUFFIX_REV}" for col in ALL_THEME_COLUMNS]
+THEME_COLUMNS_HUMAN_QUEUE = [f"{col}_{THEME_SUFFIX_HUMAN_QUEUE}" for col in ALL_THEME_COLUMNS]
+THEME_COLUMNS_HUMAN_MAIN = [f"{col}_{THEME_SUFFIX_HUMAN_MAIN}" for col in ALL_THEME_COLUMNS]
+
+HUMAN_CONTEXT_COLUMNS = ["hash_id", "case", "comment_anon", "emojis"]
+HUMAN_SUMMARY_COLUMNS = [
+    "themes_a",
+    "themes_b",
+    "themes_rev",
+    "disagreement",
+    "kappa_rev_a",
+    "kappa_rev_b",
+]
+HUMAN_CODER_A_COLUMNS = [
+    *THEME_COLUMNS_A,
+    "character_a",
+    "tone_a",
+    "confidence_a",
+]
+HUMAN_CODER_B_COLUMNS = [
+    *THEME_COLUMNS_B,
+    "character_b",
+    "tone_b",
+    "confidence_b",
+]
+HUMAN_REVIEWER_COLUMNS = [
+    *THEME_COLUMNS_REV,
+    "character_rev",
+    "tone_rev",
+    "confidence_rev",
+]
+HUMAN_EDITABLE_COLUMNS = [
+    *THEME_COLUMNS_HUMAN_QUEUE,
+    "character_h",
+    "tone_h",
+    "human_notes",
+    "reviewed_by",
+    "reviewed_at",
+]
+HUMAN_META_COLUMNS = ["classification_source", "needs_human_review"]
+
+HUMAN_QUEUE_COLUMNS = [
+    *HUMAN_CONTEXT_COLUMNS,
+    *HUMAN_SUMMARY_COLUMNS,
+    *HUMAN_CODER_A_COLUMNS,
+    *HUMAN_CODER_B_COLUMNS,
+    *HUMAN_REVIEWER_COLUMNS,
+    *HUMAN_EDITABLE_COLUMNS,
+    *HUMAN_META_COLUMNS,
+]
+
+CHARACTER_VALUES = ("Afetivo", "Cognitivo")
+TONE_VALUES = ("Positivo", "Negativo", "Neutro")
+
 PRICE_INPUT_TOKEN_NANO = 0.05 / 1_000_000
 PRICE_OUTPUT_TOKEN_NANO = 0.4 / 1_000_000
 PRICE_INPUT_TOKEN_MINI = 0.25 / 1_000_000

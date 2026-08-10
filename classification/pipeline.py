@@ -111,8 +111,14 @@ def analysis_to_result_row(
     }
     if coder_a is not None:
         row.update(flags_to_columns(coder_a, suffix="a"))
+        row["character_a"] = coder_a.character
+        row["tone_a"] = coder_a.tone
+        row["confidence_a"] = coder_a.theme_confidence
     if coder_b is not None:
         row.update(flags_to_columns(coder_b, suffix="b"))
+        row["character_b"] = coder_b.character
+        row["tone_b"] = coder_b.tone
+        row["confidence_b"] = coder_b.theme_confidence
     return row
 
 
