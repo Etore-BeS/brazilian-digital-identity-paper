@@ -1,24 +1,21 @@
 """Run dual-coder classification on a stratified sample (dry-run / cost test).
 
 Mirrors the notebook sample path (USE_SAMPLE=True) without re-running phases 1–2.
-Loads pre-processed rows from classified_comments.csv, samples stratified by case,
-runs classify_all_comments(), and writes:
-
-  - classified_comments_sample.csv
-  - final_dataset_sample.csv
+Loads pre-processed rows from outputs/classified_comments.csv, samples stratified
+by case, runs classify_all_comments(), and writes sample outputs under outputs/samples/.
 
 See classification/METHODOLOGY.md for the full methodology reference.
 
 Usage:
-    uv run python run_classification_sample.py
+    uv run python scripts/run_classification_sample.py
 
-Set USE_SAMPLE=False and OUTPUT_CSV=classified_comments.csv for a full re-run
-(requires INPUT_CSV without stale classification columns).
+Set USE_SAMPLE=False for a full re-run (requires INPUT_CSV without stale columns).
 """
 
 import ast
 import asyncio
 import os
+from pathlib import Path
 
 import pandas as pd
 from dotenv import load_dotenv
@@ -32,16 +29,25 @@ from classification.constants import (
     PRICE_OUTPUT_TOKEN_MINI,
     PRICE_OUTPUT_TOKEN_NANO,
 )
+from classification.human_review import export_human_review_queue, initialize_human_columns
 from classification.pipeline import classify_all_comments
 
-USE_SAMPLE = True
-SAMPLE_SIZE = 60
+REPO_ROOT = Path(__file__).resolve().parents[1]
+OUTPUTS = REPO_ROOT / "outputs"
+SAMPLES = OUTPUTS / "samples"
+
+USE_SAMPLE = False
+SAMPLE_SIZE = 250
 SAMPLE_SEED = 42
-INPUT_CSV = "classified_comments.csv"
-OUTPUT_CSV = "classified_comments_sample.csv"
+INPUT_CSV = OUTPUTS / "classified_comments.csv"
+OUTPUT_CSV = (
+    SAMPLES / "classified_comments_sample.csv"
+    if USE_SAMPLE
+    else OUTPUTS / "classified_comments.csv"
+)
 
 
-def load_df_final(path: str) -> pd.DataFrame:
+def load_df_final(path: Path) -> pd.DataFrame:
     df = pd.read_csv(path)
     drop_cols = [
         "theme",
@@ -70,7 +76,7 @@ def make_sample(df: pd.DataFrame) -> pd.DataFrame:
 
 
 async def main() -> None:
-    load_dotenv()
+    load_dotenv(REPO_ROOT / ".env")
     if not os.getenv("OPENAI_API_KEY"):
         msg = "OPENAI_API_KEY not set"
         raise RuntimeError(msg)
@@ -86,10 +92,21 @@ async def main() -> None:
     results_df = pd.DataFrame(res_list)
     df_out = pd.concat([df_classify.reset_index(drop=True), results_df], axis=1)
     df_out["classification_source"] = [m.get("source") for m in metadata]
-    if "human_reviewed" not in df_out.columns:
-        df_out["human_reviewed"] = False
+    df_out = initialize_human_columns(df_out)
 
+    OUTPUT_CSV.parent.mkdir(parents=True, exist_ok=True)
     df_out.to_csv(OUTPUT_CSV, index=False)
+
+    if USE_SAMPLE:
+        queue_csv = SAMPLES / "human_review_queue_sample.csv"
+        queue_xlsx = SAMPLES / "human_review_queue_sample.xlsx"
+        final_dataset_path = SAMPLES / "final_dataset_sample.csv"
+    else:
+        queue_csv = OUTPUTS / "human_review_queue.csv"
+        queue_xlsx = OUTPUTS / "human_review_queue.xlsx"
+        final_dataset_path = OUTPUTS / "aggregates" / "final_dataset.csv"
+
+    export_human_review_queue(df_out, str(queue_csv), str(queue_xlsx))
 
     input_cost = sum(
         m.get("nano_input_tokens", 0) * PRICE_INPUT_TOKEN_NANO
@@ -103,6 +120,7 @@ async def main() -> None:
     )
 
     print(f"\nSaved {OUTPUT_CSV} ({len(df_out)} rows)")
+    print(f"Human queue export: {queue_csv}, {queue_xlsx}")
     print(f"Sources: {df_out['classification_source'].value_counts().to_dict()}")
     print(f"Human review queue: {int(df_out['needs_human_review'].sum())}")
     print(f"Est. cost: ${input_cost + output_cost:.4f} USD")
@@ -115,8 +133,9 @@ async def main() -> None:
         print(compute_global_theme_kappa(llm_df, "a", "b").to_string(index=False))
 
     dataset_final = generate_dataset_final(df_out)
-    dataset_final.to_csv("final_dataset_sample.csv")
-    print("\nSaved final_dataset_sample.csv")
+    final_dataset_path.parent.mkdir(parents=True, exist_ok=True)
+    dataset_final.to_csv(final_dataset_path, index=False)
+    print(f"\nSaved {final_dataset_path}")
     print(f"Kappa human threshold: {KAPPA_HUMAN_THRESHOLD}")
 
 

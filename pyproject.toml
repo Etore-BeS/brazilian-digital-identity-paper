@@ -33,5 +33,9 @@ target-version = "py313"
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]
 
+[tool.ruff.lint.per-file-ignores]
+"scripts/build_nb.py" = ["E501"]
+"scripts/playwright_scraper.py" = ["E501", "F821", "I001", "UP015"]
+
 [dependency-groups]
 dev = ["ruff>=0.9.0"]
