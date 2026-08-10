@@ -13,5 +13,17 @@ uv.lock
 .venv
 .env
 
+# OS / editor / temp
+.DS_Store
+.cursor/
+__tmp_*
+
 # Personal / raw scrape data (keep local only)
 data/
+
+# Full classification outputs (keep local only; samples/aggregates are versioned)
+outputs/classified_comments.csv
+outputs/classified_comments_human.csv
+outputs/human_review_queue.csv
+outputs/human_review_queue.xlsx
+outputs/human_review_queue_fullfiled.xlsx
