@@ -1,9 +1,29 @@
 [project]
-name = "pam"
-version = "0.1.0"
-description = "Add your description here"
+name = "brazilian-digital-identity-paper"
+version = "1.0.0"
+description = "Thematic corpus and LLM-assisted pipeline for Brazilian digital identity on Instagram (17,287 anonymized comments)"
 readme = "README.md"
 requires-python = ">=3.13"
+license = { text = "MIT" }
+authors = [
+    { name = "Étore Braga e Santos", email = "etore.bes@gallify.dev" },
+    { name = "Pâmella Fernandes de Sá" },
+]
+maintainers = [
+    { name = "Étore Braga e Santos", email = "etore.bes@gallify.dev" },
+]
+keywords = ["brazilian-identity", "social-identity-theory", "netnography", "instagram", "content-analysis", "llm-annotation"]
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+[project.urls]
+Repository = "https://github.com/Etore-BeS/brazilian-digital-identity-paper"
+Dataset = "https://huggingface.co/datasets/Etore-BeS/brazilian-digital-identity-instagram-corpus"
+"Bug Tracker" = "https://github.com/Etore-BeS/brazilian-digital-identity-paper/issues"
 dependencies = [
     "emoji>=2.14.0",
     "ipython>=9.0.0",

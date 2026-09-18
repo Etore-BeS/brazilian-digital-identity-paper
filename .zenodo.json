@@ -1,0 +1,37 @@
+{
+  "title": "Brazilian Digital Identity on Instagram — Code and Thematic Corpus",
+  "description": "Research code and anonymized thematic corpus (17,287 Instagram comments) for the study of Brazilian digital identity. Three cases: Bruno Mars (8,100), Fernanda Torres / Oscar 2025 (6,619), Cristiano Ronaldo tribute to Pelé (2,568). Multi-label themes C1–C5 + character (Afetivo/Cognitivo) + tone (Positivo/Negativo/Neutro). Pipeline: deterministic rules (69% coverage) + dual LLM coders (gpt-5-nano) with reviewer adjudication (gpt-5-mini) and residual human review (kappa gate max<0.80). Data collected March 7–11, 2026; anonymized @handle→@user. See classification/METHODOLOGY.md and Hugging Face dataset.",
+  "creators": [
+    {
+      "name": "Braga e Santos, Étore",
+      "affiliation": "University of Campinas (Unicamp), Brazil",
+      "orcid": "0009-0000-3502-705X"
+    },
+    {
+      "name": "Sá, Pâmella Fernandes de",
+      "affiliation": "University of São Paulo, Faculdade de Economia, Administração e Contabilidade de Ribeirão Preto, Brazil"
+    }
+  ],
+  "license": "mit",
+  "keywords": [
+    "brazilian-identity",
+    "social-identity-theory",
+    "netnography",
+    "instagram",
+    "content-analysis",
+    "llm-annotation",
+    "thematic-coding"
+  ],
+  "access_right": "open",
+  "upload_type": "software",
+  "related_identifiers": [
+    {
+      "identifier": "https://huggingface.co/datasets/Etore-BeS/brazilian-digital-identity-instagram-corpus",
+      "relation": "isSupplementTo",
+      "resource_type": "dataset",
+      "scheme": "url"
+    }
+  ],
+  "communities": [],
+  "version": "1.0.0"
+}

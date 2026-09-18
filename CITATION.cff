@@ -1,0 +1,47 @@
+cff-version: 1.2.0
+title: "Brazilian Digital Identity on Instagram — Code and Thematic Corpus"
+message: "If you use this dataset or code, please cite both the dataset and the software as below."
+type: software
+authors:
+  - given-names: Étore
+    family-names: Braga e Santos
+    affiliation: University of Campinas (Unicamp), Brazil
+    orcid: https://orcid.org/0009-0000-3502-705X
+    email: etore.bes@gallify.dev
+  - given-names: Pâmella Fernandes
+    family-names: Sá
+    affiliation: University of São Paulo, Faculdade de Economia, Administração e Contabilidade de Ribeirão Preto, Brazil
+license: MIT
+repository-code: https://github.com/Etore-BeS/brazilian-digital-identity-paper
+url: https://huggingface.co/datasets/Etore-BeS/brazilian-digital-identity-instagram-corpus
+identifiers:
+  - type: url
+    value: https://huggingface.co/datasets/Etore-BeS/brazilian-digital-identity-instagram-corpus
+    description: Hugging Face dataset — CC BY 4.0, 17,287 anonymized comments (comment_anon)
+keywords:
+  - brazilian-identity
+  - social-identity-theory
+  - netnography
+  - instagram
+  - content-analysis
+  - llm-annotation
+  - thematic-coding
+version: 1.0.0
+date-released: 2026-03-11
+preferred-citation:
+  type: dataset
+  title: "Brazilian Digital Identity on Instagram — Thematic Corpus (17,287 anonymized comments)"
+  authors:
+    - given-names: Étore
+      family-names: Braga e Santos
+      affiliation: University of Campinas (Unicamp), Brazil
+      orcid: https://orcid.org/0009-0000-3502-705X
+      email: etore.bes@gallify.dev
+    - given-names: Pâmella Fernandes
+      family-names: Sá
+      affiliation: University of São Paulo, Faculdade de Economia, Administração e Contabilidade de Ribeirão Preto, Brazil
+  year: 2026
+  license: CC-BY-4.0
+  repository: https://huggingface.co/datasets/Etore-BeS/brazilian-digital-identity-instagram-corpus
+  doi: 10.5281/zenodo.XXXXXXX
+  version: 1.0.0

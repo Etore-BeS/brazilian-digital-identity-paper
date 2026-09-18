@@ -67,6 +67,17 @@ def _flag_is_true(value: Any) -> bool:
     return bool(value)
 
 
+def _is_filled(value: Any) -> bool:
+    if value is None:
+        return False
+    try:
+        if pd.isna(value):
+            return False
+    except (TypeError, ValueError):
+        pass
+    return str(value).strip() not in ("", "nan", "None", "<NA>")
+
+
 def _themes_from_row(row: pd.Series, suffix: str) -> set[str]:
     affix = f"_{suffix}" if suffix else ""
     themes: set[str] = set()
@@ -208,10 +219,11 @@ def build_human_review_queue(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def _queue_row_has_human_adjudication(row: pd.Series) -> bool:
-    theme_filled = any(str(row.get(col, "")).strip() != "" for col in THEME_COLUMNS_HUMAN_QUEUE)
-    char_filled = str(row.get("character_h", "")).strip() != ""
-    tone_filled = str(row.get("tone_h", "")).strip() != ""
-    return theme_filled or char_filled or tone_filled
+    theme_filled = any(_is_filled(row.get(col, "")) for col in THEME_COLUMNS_HUMAN_QUEUE)
+    char_filled = _is_filled(row.get("character_h", ""))
+    tone_filled = _is_filled(row.get("tone_h", ""))
+    notes_filled = _is_filled(row.get("human_notes", ""))
+    return theme_filled or char_filled or tone_filled or notes_filled
 
 
 def _validate_human_theme_flags(row: pd.Series) -> ThemeFlags:
@@ -229,9 +241,26 @@ def apply_human_adjudication(
     queue_df: pd.DataFrame,
     *,
     strict: bool = True,
+    confirm_unlabeled: bool = False,
 ) -> pd.DataFrame:
-    """Merge filled human queue rows back into the classified dataset."""
+    """Merge filled human queue rows back into the classified dataset.
+
+    Theme flags recode the row and set ``classification_source = human``.
+    Notes-only (or ``confirm_unlabeled``) marks the row reviewed and keeps
+    the standing machine labels.
+    """
     out = initialize_human_columns(classified_df)
+    object_cols = (
+        *THEME_COLUMNS_HUMAN_MAIN,
+        "character_human",
+        "tone_human",
+        "human_notes",
+        "reviewed_by",
+        "reviewed_at",
+    )
+    for col in object_cols:
+        out[col] = out[col].astype(object)
+    out["human_reviewed"] = out["human_reviewed"].astype(bool)
     if queue_df.empty:
         return out
 
@@ -250,10 +279,9 @@ def apply_human_adjudication(
                 msg = f"hash_id {hash_id} is not in the human review queue"
                 raise ValueError(msg)
             continue
-        if not _queue_row_has_human_adjudication(row):
+        if not _queue_row_has_human_adjudication(row) and not confirm_unlabeled:
             continue
 
-        flags = _validate_human_theme_flags(row)
         idx = out.index[out["hash_id"].astype(str) == hash_id]
         if idx.empty:
             if strict:
@@ -261,35 +289,51 @@ def apply_human_adjudication(
                 raise ValueError(msg)
             continue
 
-        for code in THEME_CODES:
-            out.loc[idx, f"theme_{code}"] = getattr(flags, f"theme_{code}")
-            out.loc[idx, f"theme_{code}_human"] = getattr(flags, f"theme_{code}")
-        out.loc[idx, "theme_NA"] = flags.theme_NA
-        out.loc[idx, "theme_NA_human"] = flags.theme_NA
+        theme_filled = any(_is_filled(row.get(col, "")) for col in THEME_COLUMNS_HUMAN_QUEUE)
+        if theme_filled:
+            flags = _validate_human_theme_flags(row)
+            for code in THEME_CODES:
+                out.loc[idx, f"theme_{code}"] = getattr(flags, f"theme_{code}")
+                out.loc[idx, f"theme_{code}_human"] = getattr(flags, f"theme_{code}")
+            out.loc[idx, "theme_NA"] = flags.theme_NA
+            out.loc[idx, "theme_NA_human"] = flags.theme_NA
+            out.loc[idx, "classification_source"] = "human"
+        else:
+            for col in ALL_THEME_COLUMNS:
+                out.loc[idx, f"{col}_human"] = out.loc[idx, col].to_numpy()
 
-        character_h = str(row.get("character_h", "")).strip()
-        tone_h = str(row.get("tone_h", "")).strip()
+        character_raw = row.get("character_h", "")
+        tone_raw = row.get("tone_h", "")
+        character_h = str(character_raw).strip() if _is_filled(character_raw) else ""
+        tone_h = str(tone_raw).strip() if _is_filled(tone_raw) else ""
         if character_h:
             if character_h not in CHARACTER_VALUES:
                 msg = f"Invalid character_h '{character_h}' for {hash_id}"
                 raise ValueError(msg)
             out.loc[idx, "character"] = character_h
             out.loc[idx, "character_human"] = character_h
+        elif not theme_filled:
+            out.loc[idx, "character_human"] = out.loc[idx, "character"].to_numpy()
         if tone_h:
             if tone_h not in TONE_VALUES:
                 msg = f"Invalid tone_h '{tone_h}' for {hash_id}"
                 raise ValueError(msg)
             out.loc[idx, "tone"] = tone_h
             out.loc[idx, "tone_human"] = tone_h
+        elif not theme_filled:
+            out.loc[idx, "tone_human"] = out.loc[idx, "tone"].to_numpy()
 
-        out.loc[idx, "human_notes"] = row.get("human_notes", "")
-        out.loc[idx, "reviewed_by"] = row.get("reviewed_by", "")
+        notes = row.get("human_notes", "")
+        out.loc[idx, "human_notes"] = notes if _is_filled(notes) else ""
+        reviewed_by = row.get("reviewed_by", "")
+        out.loc[idx, "reviewed_by"] = (
+            str(reviewed_by).strip() if _is_filled(reviewed_by) else "human_reviewer"
+        )
         reviewed_at = row.get("reviewed_at", "")
-        if not reviewed_at or (isinstance(reviewed_at, float) and pd.isna(reviewed_at)):
+        if not _is_filled(reviewed_at):
             reviewed_at = datetime.now(UTC).isoformat(timespec="seconds")
         out.loc[idx, "reviewed_at"] = reviewed_at
         out.loc[idx, "human_reviewed"] = True
-        out.loc[idx, "classification_source"] = "human"
 
     return out
 
@@ -331,7 +375,8 @@ def _write_instructions_sheet(wb: Workbook) -> None:
         "4. Preencha character_h e tone_h quando aplicável.",
         "5. Use human_notes para justificativas opcionais.",
         "6. Não edite colunas _a, _b ou _rev — são referência automática.",
-        "7. Após revisar, salve o CSV e execute apply_human_adjudication no notebook.",
+        "7. Após revisar, salve o CSV e execute apply_human_adjudication.",
+        "   Nota sem flags temáticas: revisado, rótulo da máquina mantido.",
         "",
         "Critério de inclusão na fila: max(kappa_rev_a, kappa_rev_b) < 0,80.",
         "Ou seja, o revisor automático não alinhou bem com A nem com B.",

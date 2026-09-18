@@ -355,9 +355,10 @@ From `outputs/classified_comments_human.csv` (post-adjudication merge; local ful
 | Metric | Value |
 |--------|-------|
 | Flagged (`needs_human_review = True`) | 225 |
-| Adjudicated (`human_reviewed = True`) | 188 (1.1% of corpus) |
-| Pending adjudication | 37 |
-| `classification_source = human` | 188 |
+| Reviewed (`human_reviewed = True`) | 225 (1.3% of corpus) |
+| Recoded (`classification_source = human`) | 188 |
+| Confirmed without recoding (reviewer labels kept) | 37 |
+| Pending | 0 |
 
 ### 8.3 Export workflow
 
@@ -388,7 +389,7 @@ flowchart TD
 
 Queue is sorted by ascending `max(κ_rev_a, κ_rev_b)` (lowest agreement first).
 
-On merge, `apply_human_adjudication()` copies `theme_*_human` → `theme_*`, sets `classification_source = "human"`, and marks `human_reviewed = True`. Partial fill is allowed (themes only, or character only).
+On merge, `apply_human_adjudication()` copies filled `theme_*_h` → `theme_*`, sets `classification_source = "human"`, and marks `human_reviewed = True`. Notes-only rows (e.g. "Não BR") are marked reviewed and keep the standing machine labels. Partial fill is allowed (themes only, character/tone only, or notes).
 
 Implementation: `classification/human_review.py`.
 
@@ -441,13 +442,13 @@ Two distinct uses of Cohen's κ (Cohen, 1960; Landis & Koch, 1977):
 | C4 | 0.574 |
 | C5 | 0.364 |
 
-**Post-adjudication** (`outputs/classified_comments_human.csv`, LLM subset n = 5,172):
+**Post-adjudication** (`outputs/classified_comments_human.csv`, LLM subset n = 5,172; 37 CR7 rows were confirmed in the human queue without theme recoding and remain `llm_reviewer`):
 
 | Metric | Value |
 |--------|-------|
 | Exact theme-set agreement (A = B) | 73.9% |
 | Reviewer invocation rate | 26.1% |
-| Human queue rate (of LLM subset) | 0.72% (37 remaining pending) |
+| Human queue rate (of LLM subset) | 0 pending (225/225 reviewed; 37 kept reviewer labels) |
 
 **Label-wise κ, Coder A ↔ Coder B (post-adjudication):**
 
@@ -487,7 +488,8 @@ Aggregation uses **all rows** in the dataframe; no filter on `human_reviewed` or
 | `outputs/aggregates/final_dataset.csv` | Aggregated N and % by case (Table 1; versioned) |
 | `outputs/samples/final_dataset_sample.csv` | Sample mode (versioned) |
 | `outputs/aggregates/final_dataset_human.csv` | Post-adjudication aggregation (versioned) |
-| `outputs/figures/01_*.png` … `09_*.png` | Paper figures (versioned) |
+| `outputs/figures/en/01_*.png` … `09_*.png` | English paper figures (versioned) |
+| `outputs/figures/pt/01_*.png` … `09_*.png` | Portuguese paper figures (versioned) |
 
 ### 10.3 Key columns for the paper
 
@@ -642,7 +644,6 @@ The following items are **required for publication-grade reproducibility** but a
 | Bot / spam filtering procedure | Mentioned in thesis draft; not implemented in code |
 | Justification for corpus scope change (600 → 17,287) | Requires author narrative |
 | Justification for not filtering on `is_brazilian` | Requires author narrative |
-| Completion plan for 37 pending human-review rows | Requires author action |
 | Exact token counts from full run | Not persisted in CSV (computable only at run time) |
 
 ---

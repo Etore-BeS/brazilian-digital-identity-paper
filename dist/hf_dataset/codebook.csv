@@ -1,0 +1,27 @@
+column,type,description
+hash_id,string,"Anonymized ID {CASE}_{seq}, sorted by date"
+case,string,Case: Bruno_Mars | Fernanda_Torres | CR7
+comment_anon,string,Anonymized comment text (@handle → @user)
+emojis_list,string,List of emojis extracted (str repr)
+hashtags_list,string,List of hashtags (str repr)
+language,string,"Detected language (langdetect, seed 42); empty if too short"
+is_brazilian,bool,Heuristic Brazilian-user flag (pt OR username OR cultural regex)
+comment_length,int,Character length of comment_norm
+theme_C1,bool,C1 Nacionalismo/Orgulho
+theme_C2,bool,C2 Humor/Sátira/Meme
+theme_C3,bool,C3 Conflito/Rivalidade
+theme_C4,bool,C4 Validação/Afeto pelo Estrangeiro
+theme_C5,bool,C5 Apropriação do Espaço Digital
+theme_NA,bool,N.A. exclusive of C1–C5
+theme_conf,float,Model self-reported confidence for theme set (0–1)
+character,string,Afetivo | Cognitivo
+char_conf,float,Confidence for character
+tone,string,Positivo | Negativo | Neutro
+tone_conf,float,Confidence for tone
+classification_source,string,rule | llm_agreed | llm_reviewer | human | error
+rule_id,string,Deterministic rule ID (rule rows only)
+coder_agreement,bool,Coder A theme set == Coder B
+reviewer_used,bool,Reviewer adjudicated (A≠B)
+kappa_reviewer_a,float,Per-comment Cohen kappa reviewer↔A (when used)
+kappa_reviewer_b,float,Per-comment Cohen kappa reviewer↔B (when used)
+human_reviewed,bool,Post human adjudication merged
